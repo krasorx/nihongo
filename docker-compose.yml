@@ -1,0 +1,31 @@
+services:
+  nextjs:
+    build:
+      context: ./nihongo-app
+      dockerfile: Dockerfile
+    container_name: nihongo_app
+    restart: always
+    volumes:
+      - ./nihongo-app/:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - .env
+    networks:
+      - traefik_net
+      - nextjs_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextjs.rule=Host(`${NEXTJS_HOST}`)"
+      - "traefik.http.routers.nextjs.entrypoints=websecure"
+      - "traefik.http.routers.nextjs.tls=true"
+      - "traefik.http.routers.nextjs.tls.certresolver=letsencrypt"
+      - "traefik.http.services.nextjs.loadbalancer.server.port=3000"
+    environment:
+      - NODE_ENV=${DEV_ENV}
+
+networks:
+  traefik_net:
+    external: true
+  nextjs_network:
+    internal: true
