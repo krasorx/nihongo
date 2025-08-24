@@ -1,0 +1,8 @@
+.notesBtn{
+    background-color: blue;
+    color: white;
+    padding: 10px 20px;
+    border: 1px solid darkgoldenrod;
+    border-radius: 5px;
+    cursor: pointer;
+}
