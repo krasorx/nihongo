@@ -73,7 +73,7 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="japanese" className="block text-sm font-medium text-gray-300">
-            Japanese
+            Japones
           </label>
           <input
             type="text"
@@ -99,7 +99,7 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
         </div>
         <div>
           <label htmlFor="translation" className="block text-sm font-medium text-gray-300">
-            Translation
+            Traducción
           </label>
           <input
             type="text"
@@ -114,7 +114,7 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
           type="submit"
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
         >
-          Create Note
+          Crear Nota
         </button>
       </form>
       <div className="mt-6 space-y-2">
