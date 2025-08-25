@@ -19,7 +19,24 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
   const [translation, setTranslation] = useState('');
   const [notes, setNotes] = useState<jpnote[]>([]);
 
-  const handleSubmit = async (e: { preventDefault: () => void; }) => {
+  const fetchNotes = async () => {
+    try {
+      const response = await fetch(`${endpoint}`);
+      if (response.ok) {
+        const data = await response.json();
+        setNotes(data);
+      } else {
+        console.error('Failed to fetch notes');
+      }
+    } catch (error) {
+      console.error('Error fetching notes:', error);
+    }
+  };
+  React.useEffect(() => {
+    fetchNotes();
+  }, [endpoint]);
+
+  const handleSubmit = async (e:any) => {
     e.preventDefault();
     let noteData: jpnote  = {
       japanese,
@@ -29,7 +46,7 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
     };
 
     try {
-      const response = await fetch('http://localhost:3000/api/notes', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -42,6 +59,7 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
         setJapanese('');
         setFurigana('');
         setTranslation('');
+        await fetchNotes();
       } else {
         console.error('Failed to send note');
       }

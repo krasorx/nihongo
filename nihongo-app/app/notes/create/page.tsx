@@ -3,7 +3,7 @@ import Link from 'next/link'
 import NoteTxt from '../../components/note';
 import CreateNote from '../../components/createNote';
 
-const endpoint: string = "http://localhost:3000/api/notes";
+const endpoint: string = "https://api.luisesp.cloud/api/notes";
 
 const CreateNotePage = () => {
   return (
