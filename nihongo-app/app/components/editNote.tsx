@@ -1,19 +1,12 @@
 'use client';
 import React, { useState } from 'react';
 import Note from './note';
-
-interface jpnote {
-  japanese: string;
-  furigana: string;
-  translation: string;
-  sequence: number;
-  id: string;
-}
+import { jpnote, NoteUpdate } from '../types/note';
 
 interface EditNoteFormProps {
   note: jpnote;
   onClose: () => void;
-  onSave: (id: string, updatedNote: jpnote) => Promise<void>;
+  onSave: (id: string, updatedNote: NoteUpdate) => Promise<void>;
 }
 
 const EditNoteModal: React.FC<EditNoteFormProps> = ({ note, onClose, onSave }) => {

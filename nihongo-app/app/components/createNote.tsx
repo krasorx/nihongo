@@ -2,14 +2,9 @@
 import React, { useState } from 'react';
 import Note from './note'
 import EditNote from './editNote'
-
-interface jpnote {
-  japanese: string;
-  furigana: string;
-  translation: string;
-  sequence: number;
-  id: string;
-}
+import { useRouter } from 'next/navigation';
+import { Hash } from 'crypto';
+import { jpnote, NoteUpdate } from '../types/note';
 
 interface CreateNoteFormProps {
   endpoint: string;
@@ -21,10 +16,13 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
   const [translation, setTranslation] = useState('');
   const [notes, setNotes] = useState<jpnote[]>([]);
   const [editingNote, setEditingNote] = useState<jpnote>();
+  const [currentHash, setCurrentHash] = useState<string>();
+  const router = useRouter();
 
-  const fetchNotes = async () => {
+  const fetchNotes = async (hashId: string) => {
+    if (!hashId) return;
     try {
-      const response = await fetch(`${endpoint}`);
+      const response = await fetch(`${endpoint}/${hashId}`);
       if (response.ok) {
         const data = await response.json();
         setNotes(data);
@@ -35,12 +33,40 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
       console.error('Error fetching notes:', error);
     }
   };
+  const handleCreateGroup = async () => {
+    try {
+      const response = await fetch(`${endpoint}/../note-groups`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.ok) {
+        const { hash_id } = await response.json();
+        setCurrentHash(hash_id);
+        setNotes([]);
+        router.push(`/notes/${hash_id}`);
+      } else {
+        console.error('Failed to create note group');
+      }
+    } catch (error) {
+      console.error('Error creating note group:', error);
+    }
+  };
   React.useEffect(() => {
-    fetchNotes();
+    const pathHash:any = window.location.pathname.split('/notes/')[1];
+    if (pathHash) {
+      setCurrentHash(pathHash);
+      fetchNotes(pathHash);
+    }
   }, [endpoint]);
 
   const handleSubmit = async (e:any) => {
     e.preventDefault();
+    if (!currentHash) {
+      alert('Primero debes crear un grupo de notas.');
+      return;
+    }
     const maxSequence = notes.length > 0 ? Math.max(...notes.map(note => note.sequence)) : -1;
     const newSequence = maxSequence + 1;
     let noteData: jpnote  = {
@@ -48,7 +74,8 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
       furigana,
       translation,
       sequence: newSequence,
-      id: '' // the backend assigns the ID
+      id: '', // the backend assigns the ID
+      hash_id: currentHash,
     };
 
     try {
@@ -65,7 +92,9 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
         setJapanese('');
         setFurigana('');
         setTranslation('');
-        await fetchNotes();
+        if (currentHash) {
+          await fetchNotes(currentHash);
+        }
       } else {
         console.error('Failed to send note');
       }
@@ -78,9 +107,10 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
     setEditingNote(note);
   };
 
-  const handleSaveNote = async (noteId: string, updatedNote: jpnote) => {
+  const handleSaveNote = async (noteId: string, updatedNote: NoteUpdate) => {
     try {
-      const response = await fetch(`${endpoint}/${noteId}`, {
+      // Ensure hash_id is included in the updatedNote
+      const response = await fetch(`${endpoint}/${currentHash}/${noteId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -89,7 +119,9 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
       });
 
       if (response.ok) {
-        await fetchNotes();
+        if (currentHash) {
+          await fetchNotes(currentHash);
+        }
       } else {
         console.error('Failed to update note');
       }
@@ -100,6 +132,12 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
 
   return (
     <div className="p-4 max-w-md mx-auto">
+      <button
+        onClick={handleCreateGroup}
+        className="mb-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
+      >
+        Create New Note Group
+      </button>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="japanese" className="block text-sm font-medium text-gray-300">
