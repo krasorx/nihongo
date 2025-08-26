@@ -1,12 +1,14 @@
 'use client';
 import React, { useState } from 'react';
 import Note from './note'
+import EditNote from './editNote'
 
 interface jpnote {
   japanese: string;
   furigana: string;
   translation: string;
   sequence: number;
+  id: string;
 }
 
 interface CreateNoteFormProps {
@@ -18,6 +20,7 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
   const [furigana, setFurigana] = useState('');
   const [translation, setTranslation] = useState('');
   const [notes, setNotes] = useState<jpnote[]>([]);
+  const [editingNote, setEditingNote] = useState<jpnote>();
 
   const fetchNotes = async () => {
     try {
@@ -38,11 +41,14 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
 
   const handleSubmit = async (e:any) => {
     e.preventDefault();
+    const maxSequence = notes.length > 0 ? Math.max(...notes.map(note => note.sequence)) : -1;
+    const newSequence = maxSequence + 1;
     let noteData: jpnote  = {
       japanese,
       furigana,
       translation,
-      sequence: 0,
+      sequence: newSequence,
+      id: '' // the backend assigns the ID
     };
 
     try {
@@ -65,6 +71,30 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
       }
     } catch (error) {
       console.error('Error:', error);
+    }
+  };
+
+  const handleEditNote = (note:jpnote) => {
+    setEditingNote(note);
+  };
+
+  const handleSaveNote = async (noteId: string, updatedNote: jpnote) => {
+    try {
+      const response = await fetch(`${endpoint}/${noteId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedNote),
+      });
+
+      if (response.ok) {
+        await fetchNotes();
+      } else {
+        console.error('Failed to update note');
+      }
+    } catch (error) {
+      console.error('Error updating note:', error);
     }
   };
 
@@ -119,14 +149,23 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
       </form>
       <div className="mt-6 space-y-2">
         {notes.map((jpnote, index) => (
-          <Note
-            key={index}
-            japanese={jpnote.japanese}
-            furigana={jpnote.furigana}
-            translation={jpnote.translation}
-          />
+          <div key={jpnote.id || index} onClick={() => handleEditNote(jpnote)} className="cursor-pointer">
+            <Note
+              key={index}
+              japanese={jpnote.japanese}
+              furigana={jpnote.furigana}
+              translation={jpnote.translation}
+            />
+          </div>
         ))}
       </div>
+      {editingNote && (
+        <EditNote
+          note={editingNote}
+          onClose={() => setEditingNote(undefined)}
+          onSave={handleSaveNote}
+        />
+      )}
     </div>
   );
 };
