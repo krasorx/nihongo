@@ -8,15 +8,17 @@ import { jpnote, NoteUpdate } from '../types/note';
 
 interface CreateNoteFormProps {
   endpoint: string;
+  hashId?: string;
+  onNoteCreated?: () => void;
 }
 
-const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
+const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint, hashId }) => {
   const [japanese, setJapanese] = useState('');
   const [furigana, setFurigana] = useState('');
   const [translation, setTranslation] = useState('');
   const [notes, setNotes] = useState<jpnote[]>([]);
   const [editingNote, setEditingNote] = useState<jpnote>();
-  const [currentHash, setCurrentHash] = useState<string>();
+  const [currentHash, setCurrentHash] = useState<string | undefined>(hashId);
   const router = useRouter();
 
   const fetchNotes = async (hashId: string) => {
@@ -54,12 +56,17 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
     }
   };
   React.useEffect(() => {
-    const pathHash:any = window.location.pathname.split('/notes/')[1];
-    if (pathHash) {
-      setCurrentHash(pathHash);
-      fetchNotes(pathHash);
+    if (hashId) {
+      setCurrentHash(hashId);
+      fetchNotes(hashId);
+    } else {
+      const pathHash: any = window.location.pathname.split('/notes/')[1];
+      if (pathHash) {
+        setCurrentHash(pathHash);
+        fetchNotes(pathHash);
+      }
     }
-  }, [endpoint]);
+  }, [endpoint, hashId]);
 
   const handleSubmit = async (e:any) => {
     e.preventDefault();
@@ -95,6 +102,7 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
         if (currentHash) {
           await fetchNotes(currentHash);
         }
+        if (onNoteCreated) onNoteCreated();
       } else {
         console.error('Failed to send note');
       }
@@ -209,3 +217,6 @@ const CreateNoteForm: React.FC<CreateNoteFormProps> = ({ endpoint }) => {
 };
 
 export default CreateNoteForm;
+function onNoteCreated() {
+  console.log('Note created successfully.');
+}
