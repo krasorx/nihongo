@@ -26,7 +26,7 @@ const Note = ({ japanese, furigana, translation }: NoteProps) => {
     >
       <span className="text-blue-300 cursor-pointer">{coloredChars}</span>
       {isHovered && (
-        <div className="absolute z-10 p-4 bg-gray-800 text-white rounded-lg shadow-lg  -translate-x-1/4 left-1/2 bottom-full mb-2 whitespace-nowrap">
+        <div className="absolute z-10 p-4 bg-gray-800 underline-offset-4 decoration-white text-white rounded-lg shadow-lg  -translate-x-1/4 left-1/2 bottom-full mb-2 whitespace-nowrap">
           <div>{furigana}; {translation}</div>
         </div>
       )}
