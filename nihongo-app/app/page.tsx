@@ -1,8 +1,20 @@
 import Image from "next/image";
 import Link from 'next/link'
 import React from "react";
-import NotesBtn from './components/notesBtn'
+import NotesBtn from './components/notesBtn';
+import CreateNote from './components/createNote';
 
+interface NoteGroupPage {
+  hashId: string;
+  endpoint: string;
+}
+/*
+<EditNoteModal
+          note={editingNote}
+          onClose={() => setEditingNote(undefined)}
+          onSave={handleSaveNote}
+        />
+*/
 export default function Home() {
   return (
     <main>
@@ -12,6 +24,7 @@ export default function Home() {
       </div>
       <div>
         <NotesBtn />
+        
       </div>
     </main>
   );
