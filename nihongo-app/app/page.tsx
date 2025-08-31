@@ -3,6 +3,7 @@ import Link from 'next/link'
 import React from "react";
 import NotesBtn from './components/notesBtn';
 import CreateNote from './components/createNote';
+import { useAuth } from './contexts/AuthContext';
 
 interface NoteGroupPage {
   hashId: string;
