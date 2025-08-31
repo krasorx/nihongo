@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import Note from '../../../components/note';
+import CreateNote from '../../../components/createNoteUser';
+import EditNoteModal from '../../../components/editNoteUser';
 
 interface Note {
   id: number;
@@ -39,9 +42,10 @@ const NoteGroupPage = () => {
   const [noteGroup, setNoteGroup] = useState<NoteGroup | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateNote, setShowCreateNote] = useState(false);
-  const [editNote, setEditNote] = useState<Note | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
   const [newNote, setNewNote] = useState({ japanese: '', furigana: '', translation: '' });
+   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     console.log('Params from useParams:', params);
@@ -117,45 +121,37 @@ const NoteGroupPage = () => {
     fetchNoteGroup();
   }, [user, token, groupId, router]);
 
-  const handleCreateNote = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!token || !noteGroup || !newNote.japanese.trim()) return;
+  const handleNoteCreated = () => {
+    setShowCreate(false);
+    // Refetch group data to update notes
+    const parsedGroupId = typeof groupId === 'string' ? parseInt(groupId, 10) : null;
+    if (!parsedGroupId || isNaN(parsedGroupId)) return;
 
-    try {
-      const maxSequence = noteGroup.notes.length > 0 ? Math.max(...noteGroup.notes.map((note) => note.sequence)) : -1;
-      const response = await fetch(`https://api.luisesp.cloud/api/db/groups/${noteGroup.id}/notes`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          japanese: newNote.japanese,
-          furigana: newNote.furigana,
-          translation: newNote.translation,
-          sequence: maxSequence + 1,
-        }),
-      });
+    const fetchNoteGroup = async () => {
+      try {
+        const response = await fetch(`https://api.luisesp.cloud/api/db/groups/${parsedGroupId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
 
-      if (response.ok) {
-        const createdNote = await response.json();
-        setNoteGroup((prev) =>
-          prev ? { ...prev, notes: [...prev.notes, createdNote] } : prev
-        );
-        setNewNote({ japanese: '', furigana: '', translation: '' });
-        setShowCreateNote(false);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Failed to create note');
+        if (response.ok) {
+          const groupData = await response.json();
+          setNoteGroup((prev) => ({
+            ...prev!,
+            notes: groupData.notes,
+          }));
+        }
+      } catch (err) {
+        console.error('Error refetching notes:', err);
       }
-    } catch (err) {
-      setError('Network error occurred');
-    }
+    };
+
+    fetchNoteGroup();
   };
 
-  const handleEditNote = async (noteId: number, updatedNote: { japanese: string; furigana: string; translation: string }) => {
-    if (!token) return;
-
+  const handleSaveNote = async (noteId: number, updatedNote: { japanese: string; furigana: string; translation: string }) => {
     try {
       const response = await fetch(`https://api.luisesp.cloud/api/db/notes/${noteId}`, {
         method: 'PUT',
@@ -178,13 +174,19 @@ const NoteGroupPage = () => {
               }
             : prev
         );
-        setEditNote(null);
+        setEditingNote(null);
       } else {
         const errorData = await response.json();
         setError(errorData.detail || 'Failed to update note');
       }
     } catch (err) {
       setError('Network error occurred');
+    }
+  };
+  
+  const handleEditNote = (note: Note) => {
+    if (editMode) {
+      setEditingNote(note);
     }
   };
 
@@ -195,9 +197,9 @@ const NoteGroupPage = () => {
   const isOwner = user && noteGroup.module?.course?.owner_id ? user.id === noteGroup.module.course.owner_id : false;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="p-4 bg-gray-200 max-w-7xl mx-auto">
+      <div className="bg-white shadow-sm border-b mb-4">
+        <div className="max-w-7xl bg-gray-200 mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
               {noteGroup.module ? (
@@ -212,217 +214,75 @@ const NoteGroupPage = () => {
               )}
               <h1 className="text-2xl font-bold text-gray-900">{noteGroup.title || 'Untitled Note Group'}</h1>
             </div>
-            {isOwner && (
-              <button
-                onClick={() => setShowCreateNote(true)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              >
-                Create Note
-              </button>
-            )}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Note Group Details</h2>
-          {noteGroup.module ? (
-            <p className="text-sm text-gray-500 mb-4">
-              Module:{' '}
-              <Link href={`/dashboard/modules/${noteGroup.module.id}`} className="text-blue-600 hover:underline">
-                {noteGroup.module.title}
-              </Link>
-            </p>
-          ) : (
-            <p className="text-sm text-gray-500 mb-4">Module: Not available</p>
-          )}
-          {noteGroup.module?.course ? (
-            <p className="text-sm text-gray-500">
-              Course:{' '}
-              <Link href={`/dashboard/courses/${noteGroup.module.course.id}`} className="text-blue-600 hover:underline">
-                {noteGroup.module.course.title}
-              </Link>
-            </p>
-          ) : (
-            <p className="text-sm text-gray-500">Course: Not available</p>
-          )}
-
-          {isOwner && showCreateNote && (
-            <div className="mt-6 p-6 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Note</h3>
-              <form onSubmit={handleCreateNote} className="space-y-4">
-                <div>
-                  <label htmlFor="japanese" className="block text-sm font-medium text-gray-700 mb-2">
-                    Japanese *
-                  </label>
-                  <input
-                    id="japanese"
-                    type="text"
-                    value={newNote.japanese}
-                    onChange={(e) => setNewNote((prev) => ({ ...prev, japanese: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    placeholder="e.g., こんにちは"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="furigana" className="block text-sm font-medium text-gray-700 mb-2">
-                    Furigana
-                  </label>
-                  <input
-                    id="furigana"
-                    type="text"
-                    value={newNote.furigana}
-                    onChange={(e) => setNewNote((prev) => ({ ...prev, furigana: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    placeholder="e.g., konnichiwa"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="translation" className="block text-sm font-medium text-gray-700 mb-2">
-                    Translation
-                  </label>
-                  <input
-                    id="translation"
-                    type="text"
-                    value={newNote.translation}
-                    onChange={(e) => setNewNote((prev) => ({ ...prev, translation: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    placeholder="e.g., Hello"
-                  />
-                </div>
-                <div className="flex justify-end space-x-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateNote(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading || !newNote.japanese.trim()}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Create Note
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Notes</h3>
-            {noteGroup.notes.length === 0 ? (
-              <p className="text-gray-600">No notes in this group yet.</p>
-            ) : (
-              <div className="space-y-4">
-                {noteGroup.notes.map((note) => (
-                  <div
-                    key={note.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                    onClick={() => isOwner && setEditNote(note)}
-                  >
-                    <h4 className="text-md font-medium text-gray-900">{note.japanese}</h4>
-                    <p className="text-gray-600">Furigana: {note.furigana || 'None'}</p>
-                    <p className="text-gray-600">Translation: {note.translation || 'None'}</p>
-                    {isOwner && (
-                      <button
-                        onClick={() => setEditNote(note)}
-                        className="mt-2 text-blue-600 hover:underline text-sm"
-                      >
-                        Edit
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {editNote && isOwner && (
-            <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Edit Note</h3>
-                  <button
-                    onClick={() => setEditNote(null)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleEditNote(editNote.id, {
-                      japanese: editNote.japanese,
-                      furigana: editNote.furigana,
-                      translation: editNote.translation,
-                    });
-                  }}
-                  className="space-y-4"
-                >
-                  <div>
-                    <label htmlFor="editJapanese" className="block text-sm font-medium text-gray-700 mb-2">
-                      Japanese *
-                    </label>
-                    <input
-                      id="editJapanese"
-                      type="text"
-                      value={editNote.japanese}
-                      onChange={(e) => setEditNote((prev) => prev ? { ...prev, japanese: e.target.value } : prev)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="editFurigana" className="block text-sm font-medium text-gray-700 mb-2">
-                      Furigana
-                    </label>
-                    <input
-                      id="editFurigana"
-                      type="text"
-                      value={editNote.furigana}
-                      onChange={(e) => setEditNote((prev) => prev ? { ...prev, furigana: e.target.value } : prev)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="editTranslation" className="block text-sm font-medium text-gray-700 mb-2">
-                      Translation
-                    </label>
-                    <input
-                      id="editTranslation"
-                      type="text"
-                      value={editNote.translation}
-                      onChange={(e) => setEditNote((prev) => prev ? { ...prev, translation: e.target.value } : prev)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    />
-                  </div>
-                  <div className="flex justify-end space-x-4">
-                    <button
-                      type="button"
-                      onClick={() => setEditNote(null)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={loading || !editNote.japanese.trim()}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Save
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-        </div>
+      <div className="flex justify-between mb-4">
+        {isOwner && (
+          <>
+            <button
+              className={`px-4 py-2 rounded-md ${editMode ? 'bg-red-600' : 'bg-blue-600'} text-white hover:${editMode ? 'bg-red-700' : 'bg-blue-700'}`}
+              onClick={() => setEditMode(!editMode)}
+            >
+              {editMode ? 'Exit Edit Mode' : 'Edit Notes'}
+            </button>
+            <button
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              onClick={() => setShowCreate(true)}
+            >
+              Create Note
+            </button>
+          </>
+        )}
       </div>
+
+      {showCreate && isOwner && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setShowCreate(false)}
+            >
+              ✕
+            </button>
+            <CreateNote
+              groupId={String(noteGroup.id)}
+              token={token}
+              onNoteCreated={handleNoteCreated}
+            />
+          </div>
+        </div>
+      )}
+
+      {noteGroup.notes.length === 0 ? (
+        <p className="text-gray-600">No notes in this group yet.</p>
+      ) : (
+        <div className="flex flex-row flex-wrap gap-2">
+          {noteGroup.notes.map((note) => (
+            <div
+              key={note.id}
+              onClick={() => isOwner && handleEditNote(note)}
+              className={`cursor-pointer ${editMode && isOwner ? 'ring-2 ring-yellow-500 rounded p-1' : ''}`}
+            >
+              <Note
+                japanese={note.japanese}
+                furigana={note.furigana}
+                translation={note.translation}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {editingNote && isOwner && (
+        <EditNoteModal
+          note={editingNote}
+          onClose={() => setEditingNote(null)}
+          onSave={handleSaveNote}
+          token={token}
+        />
+      )}
     </div>
   );
 };
