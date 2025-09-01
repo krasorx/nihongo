@@ -9,11 +9,10 @@ const CreateCoursePage = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    is_public: true
+    is_public: true,
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+  const [error, setError] = useState<string[]>([]);
   const { user, token } = useAuth();
   const router = useRouter();
 
@@ -25,18 +24,25 @@ const CreateCoursePage = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) return;
+    if (!token) {
+      setError(['Authentication token is missing']);
+      return;
+    }
+    if (!user?.id) {
+      setError(['User ID is missing']);
+      return;
+    }
 
     setLoading(true);
-    setError(null);
+    setError([]);
 
     try {
       const response = await fetch('https://api.luisesp.cloud/api/db/courses', {
@@ -53,10 +59,18 @@ const CreateCoursePage = () => {
         router.push(`/dashboard/courses/${course.id}`);
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || 'Failed to create course');
+        console.log('Error response:', errorData);
+        if (Array.isArray(errorData.detail)) {
+          const errorMessages = errorData.detail.map((err: { msg: string; loc: string[] }) =>
+            `${err.loc.join('.')}: ${err.msg}`
+          );
+          setError(errorMessages);
+        } else {
+          setError([errorData.detail || 'Failed to create course']);
+        }
       }
     } catch (err) {
-      setError('Network error occurred');
+      setError(['Network error occurred']);
     } finally {
       setLoading(false);
     }
@@ -88,9 +102,13 @@ const CreateCoursePage = () => {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
+            {error.length > 0 && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-600 text-sm">{error}</p>
+                {error.map((err, index) => (
+                  <p key={index} className="text-red-600 text-sm">
+                    {err}
+                  </p>
+                ))}
               </div>
             )}
 
@@ -153,7 +171,7 @@ const CreateCoursePage = () => {
               </Link>
               <button
                 type="submit"
-                disabled={loading || !formData.title.trim()}
+                disabled={loading || !formData.title.trim() || !user.id}
                 className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Creating...' : 'Create Course'}
