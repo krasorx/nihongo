@@ -51,22 +51,6 @@ const ModulePage = () => {
         }
 
         const moduleData = await response.json();
-
-        // Fetch course details if course_id is present and course is not included
-        if (moduleData.course_id && !moduleData.course) {
-          const courseResponse = await fetch(`https://api.luisesp.cloud/api/db/courses/${moduleData.course_id}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-          if (courseResponse.ok) {
-            moduleData.course = await courseResponse.json();
-          } else {
-            console.warn('Failed to fetch course details:', await courseResponse.json());
-          }
-        }
-
         setModule(moduleData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');

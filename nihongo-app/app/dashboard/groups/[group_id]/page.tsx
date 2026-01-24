@@ -8,8 +8,6 @@ import { useRequireAuth } from '../../../hooks/useRequireAuth';
 import Note from '../../../components/note';
 import CreateNote from '../../../components/createNoteUser';
 import EditNoteModal from '../../../components/editNoteUser';
-import advancedNoteGroup from '../../../components/advancedNoteGroup';
-import groupTranslation from '../../../components/groupTranslation';
 
 interface Note {
   id: number;
@@ -24,7 +22,7 @@ interface NoteGroup {
   id: number;
   title: string;
   module_id?: number;
-  module: {
+  module?: {
     id: number;
     title: string;
     course?: {
@@ -46,14 +44,10 @@ const NoteGroupPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [newNote, setNewNote] = useState({ japanese: '', furigana: '', translation: '' });
-   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
-    console.log('Params from useParams:', params);
-    console.log('groupId:', groupId);
-
     if (!user || authLoading) return;
 
     const parsedGroupId = typeof groupId === 'string' ? parseInt(groupId, 10) : null;
@@ -65,7 +59,6 @@ const NoteGroupPage = () => {
 
     const fetchNoteGroup = async () => {
       try {
-        console.log(`Fetching API: https://api.luisesp.cloud/api/db/groups/${parsedGroupId}`);
         const groupResponse = await fetch(`https://api.luisesp.cloud/api/db/groups/${parsedGroupId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -79,38 +72,7 @@ const NoteGroupPage = () => {
         }
 
         const groupData = await groupResponse.json();
-        console.log('NoteGroup API Response:', JSON.stringify(groupData, null, 2));
-
-        let updatedGroupData = { ...groupData };
-
-        // Fetch module data if module is missing
-        if (!groupData.module && groupData.module_id) {
-          console.log(`Fetching module: https://api.luisesp.cloud/api/db/modules/${groupData.module_id}`);
-          const moduleResponse = await fetch(`https://api.luisesp.cloud/api/db/modules/${groupData.module_id}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (!moduleResponse.ok) {
-            const errorData = await moduleResponse.json();
-            throw new Error(errorData.detail || `Failed to fetch module (status: ${moduleResponse.status})`);
-          }
-
-          const moduleData = await moduleResponse.json();
-          console.log('Module API Response:', JSON.stringify(moduleData, null, 2));
-          updatedGroupData = {
-            ...groupData,
-            module: {
-              id: moduleData.id,
-              title: moduleData.title,
-              course: moduleData.course || undefined,
-            },
-          };
-        }
-
-        setNoteGroup(updatedGroupData);
+        setNoteGroup(groupData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
