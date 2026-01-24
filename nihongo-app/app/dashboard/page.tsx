@@ -82,7 +82,7 @@ const DashboardPage = () => {
             </div>
             <div className="flex items-center space-x-4">
               <Link
-                href="/notes"
+                href="/notes/groups"
                 className="text-blue-600 hover:text-blue-500 font-medium"
               >
                 Anonymous Notes
