@@ -6,13 +6,15 @@ interface CreateNoteProps {
   groupId: string;
   token: string | null;
   onNoteCreated: () => void;
+  nextSequence?: number;
 }
 
-const CreateNote = ({ groupId, token, onNoteCreated }: CreateNoteProps) => {
+const CreateNote = ({ groupId, token, onNoteCreated, nextSequence = 0 }: CreateNoteProps) => {
   const [japanese, setJapanese] = useState('');
   const [furigana, setFurigana] = useState('');
   const [translation, setTranslation] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +23,7 @@ const CreateNote = ({ groupId, token, onNoteCreated }: CreateNoteProps) => {
       return;
     }
 
+    setLoading(true);
     try {
       const response = await fetch(`https://api.luisesp.cloud/api/db/groups/${groupId}/notes`, {
         method: 'POST',
@@ -30,9 +33,9 @@ const CreateNote = ({ groupId, token, onNoteCreated }: CreateNoteProps) => {
         },
         body: JSON.stringify({
           japanese,
-          furigana: furigana || undefined,
-          translation: translation || undefined,
-          sequence: 0, // Backend should handle sequence
+          furigana: furigana || '',
+          translation: translation || '',
+          sequence: nextSequence,
         }),
       });
 
@@ -48,15 +51,17 @@ const CreateNote = ({ groupId, token, onNoteCreated }: CreateNoteProps) => {
       }
     } catch (err) {
       setError('Network error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <h3 className="text-lg font-medium text-gray-900">Create New Note</h3>
-      {error && <p className="text-red-600">{error}</p>}
+    <form onSubmit={handleSubmit} className="space-y-4 min-w-[320px]">
+      <h3 className="text-lg font-semibold text-gray-900">Create New Note</h3>
+      {error && <p className="text-red-600 text-sm">{error}</p>}
       <div>
-        <label htmlFor="japanese" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="japanese" className="block text-sm font-semibold text-gray-800 mb-1">
           Japanese *
         </label>
         <input
@@ -64,13 +69,13 @@ const CreateNote = ({ groupId, token, onNoteCreated }: CreateNoteProps) => {
           type="text"
           value={japanese}
           onChange={(e) => setJapanese(e.target.value)}
-          className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="e.g., こんにちは"
           required
         />
       </div>
       <div>
-        <label htmlFor="furigana" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="furigana" className="block text-sm font-semibold text-gray-800 mb-1">
           Furigana
         </label>
         <input
@@ -78,12 +83,12 @@ const CreateNote = ({ groupId, token, onNoteCreated }: CreateNoteProps) => {
           type="text"
           value={furigana}
           onChange={(e) => setFurigana(e.target.value)}
-          className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="e.g., konnichiwa"
         />
       </div>
       <div>
-        <label htmlFor="translation" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="translation" className="block text-sm font-semibold text-gray-800 mb-1">
           Translation
         </label>
         <input
@@ -91,17 +96,17 @@ const CreateNote = ({ groupId, token, onNoteCreated }: CreateNoteProps) => {
           type="text"
           value={translation}
           onChange={(e) => setTranslation(e.target.value)}
-          className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="e.g., Hello"
         />
       </div>
-      <div className="flex justify-end space-x-2">
+      <div className="flex justify-end space-x-2 pt-2">
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          disabled={!japanese.trim()}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          disabled={!japanese.trim() || loading}
         >
-          Create
+          {loading ? 'Creating...' : 'Create Note'}
         </button>
       </div>
     </form>
