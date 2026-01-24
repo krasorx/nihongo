@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useRequireAuth } from '../../../hooks/useRequireAuth';
 
 interface Module {
   id: number;
@@ -25,18 +26,15 @@ interface NoteGroup {
 
 const ModulePage = () => {
   const { moduleId } = useParams();
-  const { user, token } = useAuth();
-  const router = useRouter();
+  const { user, loading: authLoading } = useRequireAuth();
+  const { token } = useAuth();
   const [module, setModule] = useState<Module | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newGroupTitle, setNewGroupTitle] = useState('');
 
   useEffect(() => {
-    if (!user || !token) {
-      router.push('/auth/login');
-      return;
-    }
+    if (!user || authLoading) return;
 
     const fetchModule = async () => {
       try {
@@ -78,7 +76,7 @@ const ModulePage = () => {
     };
 
     fetchModule();
-  }, [user, token, moduleId, router]);
+  }, [user, token, moduleId, authLoading]);
 
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,7 +109,7 @@ const ModulePage = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (authLoading || loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
   if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-600">{error}</div>;
   if (!module) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Module not found</div>;
 

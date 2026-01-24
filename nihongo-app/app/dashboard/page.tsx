@@ -3,24 +3,21 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRequireAuth } from '../hooks/useRequireAuth';
 import { Course, UserStats } from '../types/auth';
 
 const DashboardPage = () => {
-  const { user, token, logout } = useAuth();
-  const router = useRouter();
+  const { user, loading: authLoading } = useRequireAuth();
+  const { token, logout } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      router.push('/auth/login');
-      return;
-    }
+    if (!user || authLoading) return;
 
     fetchDashboardData();
-  }, [user, token, router]);
+  }, [user, token, authLoading]);
 
   const fetchDashboardData = async () => {
     if (!token) return;
@@ -62,7 +59,7 @@ const DashboardPage = () => {
     router.push('/');
   };
 
-  if (!user) {
+  if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
