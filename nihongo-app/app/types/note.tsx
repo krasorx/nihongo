@@ -13,3 +13,8 @@ export interface NoteUpdate {
   translation?: string;
   sequence?: number;
 }
+
+export interface NoteGroup {
+  notes: jpnote[];
+  translation: string | null;
+}

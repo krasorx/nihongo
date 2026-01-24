@@ -7,6 +7,8 @@ import { useAuth } from '../../../contexts/AuthContext';
 import Note from '../../../components/note';
 import CreateNote from '../../../components/createNoteUser';
 import EditNoteModal from '../../../components/editNoteUser';
+import advancedNoteGroup from '../../../components/advancedNoteGroup';
+import groupTranslation from '../../../components/groupTranslation';
 
 interface Note {
   id: number;
@@ -20,7 +22,7 @@ interface Note {
 interface NoteGroup {
   id: number;
   title: string;
-  module_id?: number; // Added to handle module_id from API
+  module_id?: number;
   module: {
     id: number;
     title: string;

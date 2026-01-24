@@ -109,7 +109,8 @@ export const redisApi = {
   
   updateNote: (hashId: string, noteId: string, noteData: any) =>
     apiRequest(`/api/redis/notes/${hashId}/${noteId}`, { method: 'PATCH', body: noteData }),
-  
+  updateGroup:(hashId: string, groupData: { translation?: string }) =>
+    apiRequest(`/api/redis/groupednotes/${hashId}/${hashId}`, { method: 'PATCH', body: groupData }),
   deleteNote: (hashId: string, noteId: string) =>
     apiRequest(`/api/redis/notes/${hashId}/${noteId}`, { method: 'DELETE' }),
   
