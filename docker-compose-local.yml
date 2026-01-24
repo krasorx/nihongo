@@ -1,0 +1,21 @@
+services:
+  nextjs:
+    build:
+      context: ./nihongo-app
+      dockerfile: Dockerfile
+    container_name: nihongo_app
+    restart: always
+    volumes:
+      - ./nihongo-app/:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - .env
+    networks:
+      - nextjs_network
+    environment:
+      - NODE_ENV=${DEV_ENV}
+
+networks:
+  nextjs_network:
+    internal: true
