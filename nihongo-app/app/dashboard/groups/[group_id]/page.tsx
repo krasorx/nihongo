@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useRequireAuth } from '../../../hooks/useRequireAuth';
 import Note from '../../../components/note';
 import CreateNote from '../../../components/createNoteUser';
 import EditNoteModal from '../../../components/editNoteUser';
@@ -39,8 +40,8 @@ interface NoteGroup {
 const NoteGroupPage = () => {
   const params = useParams();
   const groupId = params?.group_id;
-  const { user, token } = useAuth();
-  const router = useRouter();
+  const { user, loading: authLoading } = useRequireAuth();
+  const { token } = useAuth();
   const [noteGroup, setNoteGroup] = useState<NoteGroup | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,10 +54,7 @@ const NoteGroupPage = () => {
     console.log('Params from useParams:', params);
     console.log('groupId:', groupId);
 
-    if (!user || !token) {
-      router.push('/auth/login');
-      return;
-    }
+    if (!user || authLoading) return;
 
     const parsedGroupId = typeof groupId === 'string' ? parseInt(groupId, 10) : null;
     if (!parsedGroupId || isNaN(parsedGroupId)) {
@@ -121,7 +119,7 @@ const NoteGroupPage = () => {
     };
 
     fetchNoteGroup();
-  }, [user, token, groupId, router]);
+  }, [user, token, groupId, authLoading]);
 
   const handleNoteCreated = () => {
     setShowCreate(false);
@@ -192,7 +190,7 @@ const NoteGroupPage = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (authLoading || loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
   if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-600">{error}</div>;
   if (!noteGroup) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Note group not found</div>;
 

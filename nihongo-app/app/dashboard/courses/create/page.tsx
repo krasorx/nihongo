@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useRequireAuth } from '../../../hooks/useRequireAuth';
 
 const CreateCoursePage = () => {
   const [formData, setFormData] = useState({
@@ -13,14 +13,8 @@ const CreateCoursePage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string[]>([]);
-  const { user, token } = useAuth();
-  const router = useRouter();
-
-  React.useEffect(() => {
-    if (!user) {
-      router.push('/auth/login');
-    }
-  }, [user, router]);
+  const { user, loading: authLoading } = useRequireAuth();
+  const { token } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -76,8 +70,12 @@ const CreateCoursePage = () => {
     }
   };
 
-  if (!user) {
-    return <div>Loading...</div>;
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      </div>
+    );
   }
 
   return (

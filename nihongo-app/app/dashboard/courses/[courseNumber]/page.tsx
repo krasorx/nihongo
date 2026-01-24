@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useRequireAuth } from '../../../hooks/useRequireAuth';
 
 interface Course {
   id: number;
@@ -23,18 +24,15 @@ interface Module {
 
 const CoursePage = () => {
   const { courseNumber } = useParams();
-  const { user, token } = useAuth();
-  const router = useRouter();
+  const { user, loading: authLoading } = useRequireAuth();
+  const { token } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      router.push('/auth/login');
-      return;
-    }
+    if (!user || authLoading) return;
 
     const fetchCourse = async () => {
       try {
@@ -73,7 +71,7 @@ const CoursePage = () => {
     };
 
     fetchCourse();
-  }, [user, token, courseNumber, router]);
+  }, [user, token, courseNumber, authLoading]);
 
   const handleFollowToggle = async () => {
     if (!course || !token) return;
@@ -138,7 +136,7 @@ const CoursePage = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (authLoading || loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
   if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-600">{error}</div>;
   if (!course) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Course not found</div>;
 

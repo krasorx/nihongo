@@ -1,26 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useAuth } from '../../../../../contexts/AuthContext';
+import { useRequireAuth } from '../../../../../hooks/useRequireAuth';
 
 const CreateModulePage = () => {
   const { courseNumber } = useParams();
-  const { user, token } = useAuth();
-  const router = useRouter();
+  const { user, loading: authLoading } = useRequireAuth();
+  const { token } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth/login');
-    }
-  }, [user, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -61,7 +56,7 @@ const CreateModulePage = () => {
     }
   };
 
-  if (!user) {
+  if (authLoading || !user) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
   }
 
