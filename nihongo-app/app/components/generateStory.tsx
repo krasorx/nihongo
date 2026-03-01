@@ -72,7 +72,7 @@ const GenerateStory: React.FC<GenerateStoryProps> = ({ groupId, token, onComplet
         if (parsed.length === 0) throw new Error('Could not parse annotations from LLM response');
 
         setStep('Saving notes...');
-        const saved = await dbApi.bulkCreateNotes(groupId, parsed, token);
+        const saved = await dbApi.bulkCreateNotes(groupId, parsed, token, translation);
         setResult({ notesCreated: saved.notes.length, translation });
         onComplete();
 

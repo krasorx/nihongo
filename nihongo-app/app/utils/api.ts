@@ -91,8 +91,12 @@ export const dbApi = {
     apiRequest(`/api/db/groups/${groupId}/generate`, { method: 'POST', body: { prompt }, token }),
 
   // Bulk save notes (used by frontend-direct mode)
-  bulkCreateNotes: (groupId: number, notes: Array<{ japanese: string; furigana: string; translation: string }>, token: string) =>
-    apiRequest(`/api/db/groups/${groupId}/notes/bulk`, { method: 'POST', body: { notes }, token }),
+  bulkCreateNotes: (groupId: number, notes: Array<{ japanese: string; furigana: string; translation: string }>, token: string, storyTranslation?: string) =>
+    apiRequest(`/api/db/groups/${groupId}/notes/bulk`, { method: 'POST', body: { notes, story_translation: storyTranslation }, token }),
+
+  // Update note group (title, description, translation, etc.)
+  updateNoteGroup: (groupId: number, data: { title?: string; description?: string; translation?: string }, token: string) =>
+    apiRequest(`/api/db/groups/${groupId}`, { method: 'PUT', body: data, token }),
   
   // Progress
   getUserProgress: (token: string, courseId?: number, moduleId?: number) => {

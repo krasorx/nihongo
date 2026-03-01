@@ -26,6 +26,7 @@ interface NoteType {
 interface NoteGroup {
   id: number;
   title: string;
+  translation?: string;
   module_id?: number;
   module?: {
     id: number;
@@ -58,6 +59,7 @@ const NoteGroupPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [showGenerate, setShowGenerate] = useState(false);
+  const [showTranslation, setShowTranslation] = useState(false);
   const [editingNote, setEditingNote] = useState<NoteType | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [draggedNote, setDraggedNote] = useState<NoteType | null>(null);
@@ -495,6 +497,26 @@ const NoteGroupPage = () => {
         ) : (
           <div className="bg-white rounded-lg shadow-sm p-4 space-y-2">
             {renderNotes()}
+          </div>
+        )}
+
+        {/* Story translation */}
+        {noteGroup.translation && (
+          <div className="mt-4 bg-white rounded-lg shadow-sm overflow-hidden">
+            <button
+              onClick={() => setShowTranslation((v) => !v)}
+              className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <span>Story translation</span>
+              <span className="text-lg" title={showTranslation ? 'Hide' : 'Show'}>
+                {showTranslation ? '🙈' : '👁'}
+              </span>
+            </button>
+            {showTranslation && (
+              <div className="px-4 pb-4 text-gray-700 text-sm leading-relaxed border-t border-gray-100 pt-3">
+                {noteGroup.translation}
+              </div>
+            )}
           </div>
         )}
       </div>
