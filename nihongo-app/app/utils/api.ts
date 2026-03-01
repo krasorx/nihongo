@@ -90,6 +90,10 @@ export const dbApi = {
   generateStory: (groupId: number, prompt: string, token: string) =>
     apiRequest(`/api/db/groups/${groupId}/generate`, { method: 'POST', body: { prompt }, token }),
 
+  // Annotate pasted Japanese text (backend-proxied mode)
+  annotateText: (groupId: number, text: string, token: string) =>
+    apiRequest(`/api/db/groups/${groupId}/annotate`, { method: 'POST', body: { text }, token }),
+
   // Bulk save notes (used by frontend-direct mode)
   bulkCreateNotes: (groupId: number, notes: Array<{ japanese: string; furigana: string; translation: string }>, token: string, storyTranslation?: string) =>
     apiRequest(`/api/db/groups/${groupId}/notes/bulk`, { method: 'POST', body: { notes, story_translation: storyTranslation }, token }),

@@ -59,6 +59,7 @@ const NoteGroupPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [showGenerate, setShowGenerate] = useState(false);
+  const [generateMode, setGenerateMode] = useState<'story' | 'paste'>('story');
   const [showTranslation, setShowTranslation] = useState(false);
   const [editingNote, setEditingNote] = useState<NoteType | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -460,9 +461,15 @@ const NoteGroupPage = () => {
               </button>
               <button
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition-colors"
-                onClick={() => setShowGenerate(true)}
+                onClick={() => { setGenerateMode('story'); setShowGenerate(true); }}
               >
                 Generate Story
+              </button>
+              <button
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors"
+                onClick={() => { setGenerateMode('paste'); setShowGenerate(true); }}
+              >
+                Paste Text
               </button>
               <button
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors"
@@ -541,12 +548,12 @@ const NoteGroupPage = () => {
         </div>
       )}
 
-      {/* Generate Story Modal */}
+      {/* Generate Story / Paste Text Modal */}
       {showGenerate && isOwner && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-xl relative mx-4 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 rounded-xl shadow-xl relative w-full max-w-md flex flex-col max-h-[85vh]">
             <button
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl font-bold"
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl font-bold z-10"
               onClick={() => setShowGenerate(false)}
             >
               ✕
@@ -554,6 +561,7 @@ const NoteGroupPage = () => {
             <GenerateStory
               groupId={noteGroup.id}
               token={token}
+              initialMode={generateMode}
               onComplete={() => { fetchNoteGroup(); }}
               onClose={() => setShowGenerate(false)}
             />
