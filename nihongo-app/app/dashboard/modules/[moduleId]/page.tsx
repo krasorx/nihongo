@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useRequireAuth } from '../../../hooks/useRequireAuth';
+import ThemeToggle from '../../../components/ThemeToggle';
 
 interface Module {
   id: number;
@@ -93,93 +94,93 @@ const ModulePage = () => {
     }
   };
 
-  if (authLoading || loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
-  if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-600">{error}</div>;
-  if (!module) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Module not found</div>;
+  if (authLoading || loading) return (
+    <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+    </div>
+  );
+  if (error) return <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center text-red-600">{error}</div>;
+  if (!module) return <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center text-neutral-600 dark:text-neutral-400">Module not found</div>;
 
   const isOwner = user && module.course && module.course.owner_id ? user.id === module.course.owner_id : false;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center gap-3">
               {module.course ? (
                 <Link
                   href={`/dashboard/courses/${module.course.id}`}
-                  className="text-blue-600 hover:text-blue-500 font-medium mr-4"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-500 font-medium text-sm"
                 >
                   ← Back to Course
                 </Link>
               ) : (
-                <span className="text-gray-500 font-medium mr-4">← No Course</span>
+                <span className="text-neutral-400 font-medium text-sm">← No Course</span>
               )}
-              <h1 className="text-2xl font-bold text-gray-900">{module.title}</h1>
+              <span className="text-neutral-300 dark:text-neutral-600">/</span>
+              <h1 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">{module.title}</h1>
             </div>
+            <ThemeToggle />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Module Details</h2>
-          <p className="text-gray-600 mb-4">{module.description || 'No description provided.'}</p>
-          {module.course ? (
-            <p className="text-sm text-gray-500">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Module details */}
+        <div className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-5 mb-5">
+          <h2 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wide mb-2">Module Details</h2>
+          <p className="text-neutral-600 dark:text-neutral-400 text-sm">{module.description || 'No description provided.'}</p>
+          {module.course && (
+            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-2">
               Course:{' '}
-              <Link href={`/dashboard/courses/${module.course.id}`} className="text-blue-600 hover:underline">
+              <Link href={`/dashboard/courses/${module.course.id}`} className="text-blue-600 dark:text-blue-400 hover:underline">
                 {module.course.title}
               </Link>
             </p>
-          ) : (
-            <p className="text-sm text-gray-500">Course: Not available</p>
           )}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Note Groups</h2>
-          </div>
+        {/* Note groups */}
+        <div className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-5">
+          <h2 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wide mb-4">Note Groups</h2>
+
           {isOwner && (
-            <form onSubmit={handleCreateGroup} className="mb-6 space-y-4">
-              <div>
-                <label htmlFor="groupTitle" className="block text-sm font-medium text-gray-700 mb-2">
-                  New Note Group Title *
-                </label>
-                <input
-                  id="groupTitle"
-                  type="text"
-                  value={newGroupTitle}
-                  onChange={(e) => setNewGroupTitle(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="e.g., Vocabulary Set 1"
-                  required
-                />
-              </div>
+            <form onSubmit={handleCreateGroup} className="mb-5 flex gap-2">
+              <input
+                id="groupTitle"
+                type="text"
+                value={newGroupTitle}
+                onChange={(e) => setNewGroupTitle(e.target.value)}
+                className="flex-1 px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder:text-neutral-400"
+                placeholder="New group title..."
+                required
+              />
               <button
                 type="submit"
                 disabled={loading || !newGroupTitle.trim()}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Note Group
+                Create
               </button>
             </form>
           )}
+
           {module.note_groups.length === 0 ? (
-            <p className="text-gray-600">No note groups available for this module.</p>
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm">No note groups yet.</p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2">
               {module.note_groups.map((group) => (
-                <div
+                <Link
                   key={group.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  href={`/dashboard/groups/${group.id}`}
+                  className="block border border-neutral-200 dark:border-neutral-700 rounded-lg p-3 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-all"
                 >
-                  <Link href={`/dashboard/groups/${group.id}`}>
-                    <h3 className="text-lg font-medium text-gray-900">{group.title}</h3>
-                  </Link>
-                </div>
+                  <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{group.title}</h3>
+                </Link>
               ))}
             </div>
           )}

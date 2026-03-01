@@ -3,35 +3,35 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
+import ThemeToggle from '../components/ThemeToggle';
 
 const HomePage = () => {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-700 via-white to-purple-500">
+    <div className="min-h-screen bg-gradient-to-br from-blue-700 via-white to-purple-500 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-900">
       {/* Header */}
       <header className="relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">Aprende Japones</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Aprende Japones</h1>
               <span className="ml-2 text-2xl">🇯🇵</span>
             </div>
-            <nav className="flex items-center space-x-4">
+            <nav className="flex items-center space-x-3">
+              <ThemeToggle />
               {user ? (
-                <>
-                  <Link
-                    href="/dashboard"
-                    className="text-gray-700 hover:text-gray-900 font-medium"
-                  >
-                    Dashboard
-                  </Link>
-                </>
+                <Link
+                  href="/dashboard"
+                  className="text-gray-700 dark:text-neutral-300 hover:text-gray-900 dark:hover:text-neutral-100 font-medium"
+                >
+                  Dashboard
+                </Link>
               ) : (
                 <>
                   <Link
                     href="/auth/login"
-                    className="text-gray-700 hover:text-gray-900 font-medium"
+                    className="text-gray-700 dark:text-neutral-300 hover:text-gray-900 dark:hover:text-neutral-100 font-medium"
                   >
                     Login
                   </Link>
@@ -51,14 +51,14 @@ const HomePage = () => {
       {/* Hero Section */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24">
         <div className="text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-neutral-100 mb-6">
             Master Japanese with
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {' '}Smart Notes
             </span>
           </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
-            Create your own Japanese learning materials with kanji, furigana, and translations. 
+          <p className="text-xl text-gray-600 dark:text-neutral-400 mb-12 max-w-3xl mx-auto">
+            Create your own Japanese learning materials with kanji, furigana, and translations.
             Track your progress with spaced repetition and organized courses.
           </p>
 
@@ -72,57 +72,57 @@ const HomePage = () => {
               </Link>
             ) : (
               <Link
-                  href="/auth/register"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
-                >
-                  Start Learning Free
-                </Link>
+                href="/auth/register"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
+              >
+                Start Learning Free
+              </Link>
             )}
           </div>
 
           {/* Feature Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
               <div className="text-4xl mb-4">📝</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Smart Note Taking</h3>
-              <p className="text-gray-600">
-                Create notes with Japanese text, furigana pronunciation guides, and translations. 
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-neutral-100 mb-3">Smart Note Taking</h3>
+              <p className="text-gray-600 dark:text-neutral-400">
+                Create notes with Japanese text, furigana pronunciation guides, and translations.
                 Organize them by topics and difficulty.
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
               <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Spaced Repetition</h3>
-              <p className="text-gray-600">
-                Built-in spaced repetition system helps you review at optimal intervals 
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-neutral-100 mb-3">Spaced Repetition</h3>
+              <p className="text-gray-600 dark:text-neutral-400">
+                Built-in spaced repetition system helps you review at optimal intervals
                 for maximum retention and learning efficiency.
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
               <div className="text-4xl mb-4">📚</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Organized Courses</h3>
-              <p className="text-gray-600">
-                Structure your learning with courses and modules. Track progress and 
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-neutral-100 mb-3">Organized Courses</h3>
+              <p className="text-gray-600 dark:text-neutral-400">
+                Structure your learning with courses and modules. Track progress and
                 follow courses created by other learners.
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
               <div className="text-4xl mb-4">📊</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Progress Tracking</h3>
-              <p className="text-gray-600">
-                Monitor your learning journey with detailed statistics and mastery levels 
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-neutral-100 mb-3">Progress Tracking</h3>
+              <p className="text-gray-600 dark:text-neutral-400">
+                Monitor your learning journey with detailed statistics and mastery levels
                 for each note and concept.
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
               <div className="text-4xl mb-4">🌐</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Share & Discover</h3>
-              <p className="text-gray-600">
-                Share your courses publicly and discover content created by the community. 
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-neutral-100 mb-3">Share & Discover</h3>
+              <p className="text-gray-600 dark:text-neutral-400">
+                Share your courses publicly and discover content created by the community.
                 Learn from diverse teaching styles.
               </p>
             </div>
@@ -143,20 +143,20 @@ const HomePage = () => {
               </Link>
             ) : (
               <Link
-                  href="/auth/register"
-                  className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 inline-block"
-                >
-                  Create Free Account
-                </Link>
+                href="/auth/register"
+                className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 inline-block"
+              >
+                Create Free Account
+              </Link>
             )}
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-500 bg-transparent">
+      <footer className="border-t border-gray-500 dark:border-neutral-700 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-600">
+          <div className="text-center text-gray-600 dark:text-neutral-500">
             <p>&copy; 2025 Nihongo Learning Web. for Japanese learners.</p>
           </div>
         </div>
