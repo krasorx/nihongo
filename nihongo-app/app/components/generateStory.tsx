@@ -3,91 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { dbApi } from '../utils/api';
+import { llmChat, parseAnnotatedStory, fetchLLMSettings, type LLMSettings } from '../utils/llm';
 
 interface GenerateStoryProps {
   groupId: number;
   token: string | null;
   onComplete: () => void;
   onClose: () => void;
-}
-
-interface LLMSettings {
-  llm_url: string;
-  llm_api_key: string;
-  llm_model: string | null;
-  connection_mode: string;
-}
-
-interface ParsedNote {
-  japanese: string;
-  furigana: string;
-  translation: string;
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function stripThinkTags(text: string): string {
-  return text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-}
-
-function parseAnnotatedStory(annotated: string): ParsedNote[] {
-  const notes: ParsedNote[] = [];
-  const lines = annotated.split('\n');
-  const regex = /\[([^;]*);([^;]*);([^\]]*)\]/g;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-
-    let match: RegExpExecArray | null;
-    let lineHasNotes = false;
-    regex.lastIndex = 0;
-
-    while ((match = regex.exec(line)) !== null) {
-      const japanese = match[1].trim();
-      const furigana = match[2].trim();
-      const translation = match[3].trim();
-      if (japanese) {
-        notes.push({ japanese, furigana, translation });
-        lineHasNotes = true;
-      }
-    }
-
-    if (lineHasNotes && i < lines.length - 1) {
-      notes.push({ japanese: '[[BR]]', furigana: '', translation: '' });
-    }
-  }
-
-  // Remove trailing BR
-  if (notes.length > 0 && notes[notes.length - 1].japanese === '[[BR]]') {
-    notes.pop();
-  }
-
-  return notes;
-}
-
-async function llmChat(url: string, apiKey: string, model: string, content: string): Promise<string> {
-  // Normalize: strip trailing slash, ensure path ends at /v1
-  const base = url.replace(/\/+$/, '').replace(/\/v1$/, '') + '/v1';
-  const res = await fetch(`${base}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: model || 'local-model',
-      messages: [{ role: 'user', content }],
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `LLM error ${res.status}`);
-  }
-
-  const data = await res.json();
-  return stripThinkTags(data.choices[0].message.content);
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -103,7 +25,10 @@ const GenerateStory: React.FC<GenerateStoryProps> = ({ groupId, token, onComplet
 
   useEffect(() => {
     if (!token) return;
-    dbApi.getLLMSettings(token).then(setSettings).catch(() => setNoConfig(true));
+    fetchLLMSettings(token).then((s) => {
+      if (s) setSettings(s);
+      else setNoConfig(true);
+    });
   }, [token]);
 
   const handleGenerate = async () => {
