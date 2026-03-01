@@ -83,12 +83,16 @@ export const dbApi = {
   getLLMSettings: (token: string) =>
     apiRequest('/api/db/settings', { token }),
 
-  updateLLMSettings: (data: { llm_url: string; llm_api_key: string; llm_model?: string }, token: string) =>
+  updateLLMSettings: (data: { llm_url: string; llm_api_key: string; llm_model?: string; connection_mode: string }, token: string) =>
     apiRequest('/api/db/settings', { method: 'PUT', body: data, token }),
 
-  // Story generation
+  // Story generation (backend-proxied mode)
   generateStory: (groupId: number, prompt: string, token: string) =>
     apiRequest(`/api/db/groups/${groupId}/generate`, { method: 'POST', body: { prompt }, token }),
+
+  // Bulk save notes (used by frontend-direct mode)
+  bulkCreateNotes: (groupId: number, notes: Array<{ japanese: string; furigana: string; translation: string }>, token: string) =>
+    apiRequest(`/api/db/groups/${groupId}/notes/bulk`, { method: 'POST', body: { notes }, token }),
   
   // Progress
   getUserProgress: (token: string, courseId?: number, moduleId?: number) => {

@@ -13,6 +13,7 @@ const SettingsPage = () => {
   const [llmUrl, setLlmUrl] = useState('http://localhost:1234/v1');
   const [llmApiKey, setLlmApiKey] = useState('lm-studio');
   const [llmModel, setLlmModel] = useState('');
+  const [connectionMode, setConnectionMode] = useState<'backend' | 'frontend'>('backend');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -27,6 +28,7 @@ const SettingsPage = () => {
         setLlmUrl(data.llm_url || '');
         setLlmApiKey(data.llm_api_key || '');
         setLlmModel(data.llm_model || '');
+        setConnectionMode(data.connection_mode === 'frontend' ? 'frontend' : 'backend');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load settings');
       } finally {
@@ -47,7 +49,12 @@ const SettingsPage = () => {
 
     try {
       await dbApi.updateLLMSettings(
-        { llm_url: llmUrl, llm_api_key: llmApiKey, llm_model: llmModel || undefined },
+        {
+          llm_url: llmUrl,
+          llm_api_key: llmApiKey,
+          llm_model: llmModel || undefined,
+          connection_mode: connectionMode,
+        },
         token
       );
       setSuccess(true);
@@ -84,10 +91,46 @@ const SettingsPage = () => {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-1">LLM Configuration</h2>
           <p className="text-sm text-gray-500 mb-6">
-            Configure your local LLM server (e.g. LM Studio) for story generation.
+            Configure your LLM for story generation.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+
+            {/* Connection Mode */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Connection mode</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setConnectionMode('frontend')}
+                  className={`p-4 border-2 rounded-lg text-left transition-colors ${
+                    connectionMode === 'frontend'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="font-medium text-sm text-gray-900">Frontend Direct</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Browser calls LM Studio directly. Best for <strong>localhost</strong>.
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConnectionMode('backend')}
+                  className={`p-4 border-2 rounded-lg text-left transition-colors ${
+                    connectionMode === 'backend'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="font-medium text-sm text-gray-900">Server Proxied</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Server calls the LLM. Best for <strong>Tailscale / remote URLs</strong>.
+                  </div>
+                </button>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 LLM URL
@@ -100,7 +143,11 @@ const SettingsPage = () => {
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
-              <p className="text-xs text-gray-400 mt-1">OpenAI-compatible base URL (no trailing slash)</p>
+              <p className="text-xs text-gray-400 mt-1">
+                {connectionMode === 'frontend'
+                  ? 'URL that your browser can reach directly, e.g. http://localhost:1234/v1'
+                  : 'URL that the server can reach, e.g. http://100.x.x.x:1234/v1 via Tailscale'}
+              </p>
             </div>
 
             <div>
@@ -115,12 +162,14 @@ const SettingsPage = () => {
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
-              <p className="text-xs text-gray-400 mt-1">For LM Studio use "lm-studio". For OpenAI use your real API key.</p>
+              <p className="text-xs text-gray-400 mt-1">
+                For LM Studio use "lm-studio". For OpenAI-compatible APIs use your real key.
+              </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Model (optional)
+                Model <span className="text-gray-400">(optional)</span>
               </label>
               <input
                 type="text"
@@ -129,7 +178,6 @@ const SettingsPage = () => {
                 placeholder="Leave blank to use the server default"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
-              <p className="text-xs text-gray-400 mt-1">e.g. "deepseek-r1" or "gpt-4o-mini". Leave blank to use the loaded model.</p>
             </div>
 
             {error && (
