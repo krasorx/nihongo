@@ -78,6 +78,17 @@ export const dbApi = {
   // Stats
   getUserStats: (token: string) =>
     apiRequest('/api/db/stats', { token }),
+
+  // LLM Settings
+  getLLMSettings: (token: string) =>
+    apiRequest('/api/db/settings', { token }),
+
+  updateLLMSettings: (data: { llm_url: string; llm_api_key: string; llm_model?: string }, token: string) =>
+    apiRequest('/api/db/settings', { method: 'PUT', body: data, token }),
+
+  // Story generation
+  generateStory: (groupId: number, prompt: string, token: string) =>
+    apiRequest(`/api/db/groups/${groupId}/generate`, { method: 'POST', body: { prompt }, token }),
   
   // Progress
   getUserProgress: (token: string, courseId?: number, moduleId?: number) => {

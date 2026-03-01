@@ -87,6 +87,12 @@ const DashboardPage = () => {
               >
                 Anonymous Notes
               </Link>
+              <Link
+                href="/dashboard/settings"
+                className="text-gray-600 hover:text-gray-800 font-medium"
+              >
+                Settings
+              </Link>
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"

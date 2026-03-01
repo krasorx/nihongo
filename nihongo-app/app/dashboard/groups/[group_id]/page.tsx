@@ -8,6 +8,7 @@ import { useRequireAuth } from '../../../hooks/useRequireAuth';
 import Note from '../../../components/note';
 import CreateNote from '../../../components/createNoteUser';
 import EditNoteModal from '../../../components/editNoteUser';
+import GenerateStory from '../../../components/generateStory';
 
 // Special markers for formatting
 const SEPARATOR_MARKER = '[[SEP]]';
@@ -56,6 +57,7 @@ const NoteGroupPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [showGenerate, setShowGenerate] = useState(false);
   const [editingNote, setEditingNote] = useState<NoteType | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [draggedNote, setDraggedNote] = useState<NoteType | null>(null);
@@ -455,6 +457,12 @@ const NoteGroupPage = () => {
                 + Line Break ↵
               </button>
               <button
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition-colors"
+                onClick={() => setShowGenerate(true)}
+              >
+                Generate Story
+              </button>
+              <button
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors"
                 onClick={() => setShowCreate(true)}
               >
@@ -506,6 +514,26 @@ const NoteGroupPage = () => {
               token={token}
               onNoteCreated={handleNoteCreated}
               nextSequence={getNextSequence()}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Generate Story Modal */}
+      {showGenerate && isOwner && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl relative mx-4 w-full max-w-md">
+            <button
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl font-bold"
+              onClick={() => setShowGenerate(false)}
+            >
+              ✕
+            </button>
+            <GenerateStory
+              groupId={noteGroup.id}
+              token={token}
+              onComplete={() => { fetchNoteGroup(); }}
+              onClose={() => setShowGenerate(false)}
             />
           </div>
         </div>

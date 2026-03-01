@@ -3,6 +3,8 @@ services:
     build:
       context: ./nihongo-app
       dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
     container_name: nihongo_app
     restart: always
     volumes:
