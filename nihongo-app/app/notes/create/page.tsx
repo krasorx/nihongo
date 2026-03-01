@@ -1,16 +1,10 @@
-import React from 'react'
-import Link from 'next/link'
-import NoteTxt from '../../components/note';
-import CreateNote from '../../components/createNote';
+// ANONYMOUS_MODE_DISABLED
+// To re-enable: remove the redirect below and restore the original content:
+// import CreateNote from '../../components/createNote';
+// const endpoint = "https://api.luisesp.cloud/api/redis/notes";
+// export default function CreateNotePage() { return <CreateNote endpoint={endpoint} />; }
+import { redirect } from 'next/navigation';
 
-const endpoint: string = "https://api.luisesp.cloud/api/redis/notes";
-
-const CreateNotePage = () => {
-  return (
-    <div>
-      <CreateNote endpoint={endpoint} />
-    </div>
-  )
+export default function CreateNotePage() {
+  redirect('/dashboard');
 }
-
-export default CreateNotePage

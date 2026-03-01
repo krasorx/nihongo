@@ -26,21 +26,9 @@ const HomePage = () => {
                   >
                     Dashboard
                   </Link>
-                  <Link
-                    href="/notes"
-                    className="text-gray-700 hover:text-gray-900 font-medium"
-                  >
-                    Notes
-                  </Link>
                 </>
               ) : (
                 <>
-                  <Link
-                    href="/notes"
-                    className="text-gray-700 hover:text-gray-900 font-medium"
-                  >
-                    Try Anonymous
-                  </Link>
                   <Link
                     href="/auth/login"
                     className="text-gray-700 hover:text-gray-900 font-medium"
@@ -83,20 +71,12 @@ const HomePage = () => {
                 Go to Dashboard
               </Link>
             ) : (
-              <>
-                <Link
+              <Link
                   href="/auth/register"
                   className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
                 >
                   Start Learning Free
                 </Link>
-                <Link
-                  href="/notes"
-                  className="bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all border-2 border-gray-200 hover:border-gray-300"
-                >
-                  Try Without Account
-                </Link>
-              </>
             )}
           </div>
 
@@ -126,15 +106,6 @@ const HomePage = () => {
               <p className="text-gray-600">
                 Structure your learning with courses and modules. Track progress and 
                 follow courses created by other learners.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="text-4xl mb-4">⚡</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Quick & Anonymous</h3>
-              <p className="text-gray-600">
-                Start immediately without creating an account. Create temporary note groups 
-                for quick study sessions.
               </p>
             </div>
 
@@ -171,20 +142,12 @@ const HomePage = () => {
                 Continue Learning
               </Link>
             ) : (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
+              <Link
                   href="/auth/register"
-                  className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105"
+                  className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 inline-block"
                 >
                   Create Free Account
                 </Link>
-                <Link
-                  href="/notes"
-                  className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-blue-600 transition-all"
-                >
-                  Try Now
-                </Link>
-              </div>
             )}
           </div>
         </div>
